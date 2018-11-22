@@ -98,8 +98,61 @@ namespace InternRegister.Services
 
                 cmd.Parameters.AddWithValue("@Id", id);
 
-                using (SqlRea)
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var intern = new Intern()
+                        {
+                            Id = (int)reader["Id"],
+                            FirstName = (string)reader["FirstName"],
+                            LastName = (string)reader["LastName"],
+                            Email = (string)reader["Email"],
+                            Password = (string)reader["Password"],
+                            PhoneNumber = (string)reader["PhoneNumber"],
+                            Sponsorship = (bool)reader["Sponsorship"],
+                            DateCreated = (DateTime)reader["DateCreated"],
+                            DateModified = (DateTime)reader["DateModified"]
+                        };
+                        returnIntern = intern;
+                    }
+                    conn.Close();
+                }
             }
+            return returnIntern;
+        }
+
+        public int Update(InternUpdateRequest request, int id)
+        {
+            int returnId = 0;
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+
+                SqlCommand cmd = conn.CreateCommand();
+                cmd.CommandText = "Intern_Update";
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@Id", id);
+                cmd.Parameters.AddWithValue("FirstName", request.FirstName);
+                cmd.Parameters.AddWithValue("LastName", request.LastName);
+                cmd.Parameters.AddWithValue("Email", request.Email);
+                cmd.Parameters.AddWithValue("Password", request.Password);
+                cmd.Parameters.AddWithValue("PhoneNumber", request.PhoneNumber);
+                cmd.Parameters.AddWithValue("Sponsorship", request.Sponsorship);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        returnId = (int)reader["Id"];
+                    }
+                    reader.Close();
+                }
+                conn.Close();
+            }
+            return returnId;
         }
 
     }
